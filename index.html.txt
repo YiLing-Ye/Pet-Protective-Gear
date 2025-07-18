@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣寵物輔具市場商機互動儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Calm Harmony (Beige, Soft Brown, Muted Teal, Warm Off-White) -->
+    <!-- Application Structure Plan: A task-oriented SPA with four main sections (Market Overview, Product Opportunities, Sourcing Strategy, Import Guide) navigated via a top bar. This structure abandons the linear report format in favor of a user flow that mirrors an entrepreneur's decision-making process: understanding the market, identifying specific product gaps, finding suppliers, and planning logistics. This non-linear, interactive dashboard approach allows the user to quickly access actionable insights relevant to their business goals. -->
+    <!-- Visualization & Content Choices: Market Overview uses a Chart.js Doughnut chart for hot products (Goal: Compare) and styled cards for pain points (Goal: Inform) for quick visual scanning. Product Opportunities uses interactive buttons and dynamic content display to explore niches (Goal: Explore), directly addressing business strategy. Sourcing Strategy features a filterable HTML table for recommended sellers (Goal: Organize/Compare), providing a practical tool. The Import Guide uses HTML/CSS flowcharts and expandable cards (Goal: Organize/Inform) to simplify complex information. All choices prioritize interactivity and clarity for a business user. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fdfcf9;
+            color: #4a4a4a;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active {
+            border-bottom-color: #0d9488; /* teal-600 */
+            color: #0d9488;
+            font-weight: 700;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            height: 320px;
+            margin: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 420px;
+            }
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .tab-button.active {
+            background-color: #0d9488;
+            color: white;
+        }
+        .qa-card-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .qa-card.open .qa-card-answer {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-700">
+
+    <div class="container mx-auto px-4 py-5 md:py-8">
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-teal-800">台灣寵物輔具市場商機互動儀表板</h1>
+            <p class="mt-2 text-stone-500">從市場分析到選品策略的創業者指南</p>
+        </header>
+
+        <nav class="bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm rounded-lg mb-8">
+            <ul class="flex justify-center items-center gap-4 md:gap-8 p-3 text-sm md:text-base">
+                <li><a href="#" class="nav-link active" data-target="overview">市場總覽</a></li>
+                <li><a href="#" class="nav-link" data-target="opportunities">產品機會點</a></li>
+                <li><a href="#" class="nav-link" data-target="sourcing">淘寶選品策略</a></li>
+                <li><a href="#" class="nav-link" data-target="import">進口實務指南</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Section 1: 市場總覽 -->
+            <section id="overview" class="content-section active">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-2">市場總覽：機會與挑戰並存</h2>
+                    <p class="max-w-3xl mx-auto text-stone-600">
+                        本區塊提供台灣寵物輔具市場的宏觀視圖，透過熱銷品項分佈與消費者主要痛點分析，快速掌握市場脈動與切入點。台灣市場正處於成長期，飼主對高齡、殘疾寵物的照護意願提升，但現有產品無法完全滿足需求，這正是您的機會所在。
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-5 gap-8 items-center">
+                    <div class="md:col-span-2">
+                        <h3 class="text-xl font-semibold text-center mb-4">熱銷輔具品項分析</h3>
+                        <div class="chart-container">
+                            <canvas id="hotItemsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="md:col-span-3">
+                        <h3 class="text-xl font-semibold text-center mb-4">台灣市場主要消費者痛點</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="card bg-white p-5 rounded-lg shadow-md border-l-4 border-amber-500">
+                                <h4 class="font-bold text-lg mb-2">💰 價格昂貴</h4>
+                                <p class="text-sm">台灣本土或進口品牌定價偏高，特別是輪椅、大型輔具，常讓飼主望而卻步，構成主要進入障礙。</p>
+                            </div>
+                            <div class="card bg-white p-5 rounded-lg shadow-md border-l-4 border-sky-500">
+                                <h4 class="font-bold text-lg mb-2">📏 尺寸不符</h4>
+                                <p class="text-sm">通用尺寸無法滿足所有犬貓。特殊體型如柯基、臘腸，或體重過輕/過重的寵物，很難找到合身產品。</p>
+                            </div>
+                            <div class="card bg-white p-5 rounded-lg shadow-md border-l-4 border-rose-500">
+                                <h4 class="font-bold text-lg mb-2">💔 設計不良</h4>
+                                <p class="text-sm">材質悶熱、穿戴複雜、影響寵物排泄、磨傷皮膚等問題頻繁出現，降低飼主與寵物的使用意願。</p>
+                            </div>
+                             <div class="card bg-white p-5 rounded-lg shadow-md border-l-4 border-violet-500">
+                                <h4 class="font-bold text-lg mb-2">🎨 美感不足</h4>
+                                <p class="text-sm">輔具外觀普遍缺乏設計感，醫療感過重，不符合現代飼主對寵物用品美學的要求。</p>
+                            </div>
+                             <div class="card bg-white p-5 rounded-lg shadow-md border-l-4 border-lime-500">
+                                <h4 class="font-bold text-lg mb-2">🤔 缺乏試用</h4>
+                                <p class="text-sm">高單價輔具無法試用，飼主擔心購買後不適用造成浪費，購買決策過程充滿不確定性。</p>
+                            </div>
+                             <div class="card bg-white p-5 rounded-lg shadow-md border-l-4 border-cyan-500">
+                                <h4 class="font-bold text-lg mb-2">🐾 貓用產品稀少</h4>
+                                <p class="text-sm">市場上絕大多數產品為犬用設計，貓的特殊身形與天性被忽略，貓用輔具是極大的藍海市場。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: 產品機會點 -->
+            <section id="opportunities" class="content-section">
+                 <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-2">產品機會點：發掘市場藍海</h2>
+                    <p class="max-w-3xl mx-auto text-stone-600">
+                        本區塊深入挖掘台灣市場尚未被滿足的需求，並與淘寶熱銷品進行對比，揭示具體的產品機會。您可以透過下方的互動選項，探索針對特定利基市場（如柯基、貓）的獨特商機，這些是建立市場差異化、避開紅海競爭的關鍵。
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-center">待滿足的需求：從淘寶看台灣市場缺口</h3>
+                     <div class="grid md:grid-cols-2 gap-6">
+                        <div class="border p-4 rounded-lg bg-stone-50">
+                            <h4 class="font-bold text-lg text-rose-600 mb-2">台灣市場的不足之處 👎</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                <li>缺乏針對<span class="font-bold text-rose-700">特殊體型</span>（如柯基）的專用設計。</li>
+                                <li><span class="font-bold text-rose-700">貓用輔具</span>選擇極少，幾乎是市場空白。</li>
+                                <li>產品設計細節不足，<span class="font-bold text-rose-700">舒適度與便利性</span>有待加強。</li>
+                                <li><span class="font-bold text-rose-700">輕量化、簡易型</span>的輔助帶選擇不多。</li>
+                            </ul>
+                        </div>
+                         <div class="border p-4 rounded-lg bg-stone-50">
+                            <h4 class="font-bold text-lg text-teal-600 mb-2">淘寶可填補的優勢 👍</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                <li>已有<span class="font-bold text-teal-700">柯基專用</span>輔助帶等利基產品。</li>
+                                <li>開始出現考慮貓咪身形的<span class="font-bold text-teal-700">柔軟胸背、提帶</span>。</li>
+                                <li>注重<span class="font-bold text-teal-700">材質、透氣性、人體工學握把</span>等設計細節。</li>
+                                <li>提供大量<span class="font-bold text-teal-700">高CP值</span>的簡易輔助帶與護具。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-center mb-4">利基市場互動探索</h3>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <button class="tab-button px-6 py-2 rounded-full transition duration-300 ease-in-out" data-niche="corgi">🐶 柯基市場</button>
+                        <button class="tab-button px-6 py-2 rounded-full transition duration-300 ease-in-out" data-niche="cat">🐱 貓市場</button>
+                    </div>
+                    <div id="niche-content" class="bg-white p-6 rounded-lg shadow-lg min-h-[250px] transition-all duration-500">
+                        <p class="text-center text-stone-500">請點擊上方按鈕，探索特定利基市場的痛點與產品機會。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: 淘寶選品策略 -->
+            <section id="sourcing" class="content-section">
+                 <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-2">淘寶選品策略：低風險啟動您的事業</h2>
+                    <p class="max-w-3xl mx-auto text-stone-600">
+                        成功的關鍵在於精準選品。本區塊提供一個清晰的選品漏斗策略，並附上一個可互動篩選的推薦賣家列表。您可以根據賣家類型進行篩選，快速找到符合您初期「低風險、高潛力」策略的合作夥伴，為您的事業打下堅實基礎。
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8 mb-10">
+                    <div class="card flex flex-col items-center text-center p-5 bg-white rounded-lg shadow-md">
+                        <div class="bg-teal-100 text-teal-700 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-3">1</div>
+                        <h4 class="font-bold text-lg mb-2">從低風險產品起步</h4>
+                        <p class="text-sm">優先選擇輔助帶、護具等單價低、需求廣、無複雜機械結構的產品，降低初期庫存與資金風險。</p>
+                    </div>
+                    <div class="card flex flex-col items-center text-center p-5 bg-white rounded-lg shadow-md">
+                        <div class="bg-teal-100 text-teal-700 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-3">2</div>
+                        <h4 class="font-bold text-lg mb-2">切入利基市場</h4>
+                        <p class="text-sm">專攻柯基、貓用等特殊市場，建立品牌獨特性，避開與大型寵物店的直接價格競爭。</p>
+                    </div>
+                    <div class="card flex flex-col items-center text-center p-5 bg-white rounded-lg shadow-md">
+                        <div class="bg-teal-100 text-teal-700 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-3">3</div>
+                        <h4 class="font-bold text-lg mb-2">強調品質與設計</h4>
+                        <p class="text-sm">挑選材質優良、設計貼心（如透氣、易穿戴、握把舒適）的產品，創造價值，提升顧客滿意度。</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-center mb-4">10個淘寶推薦賣家 (低風險品項)</h3>
+                    <div class="flex justify-center gap-2 flex-wrap mb-4">
+                        <button class="seller-filter-btn bg-teal-500 text-white px-4 py-1 rounded-full text-sm" data-filter="all">全部</button>
+                        <button class="seller-filter-btn bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm" data-filter="專家">康復用品專家</button>
+                        <button class="seller-filter-btn bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm" data-filter="品牌">大型品牌店</button>
+                        <button class="seller-filter-btn bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm" data-filter="利基">利基市場專家</button>
+                        <button class="seller-filter-btn bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm" data-filter="實用">高性價比實用派</button>
+                    </div>
+                    <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                        <table class="w-full text-sm text-left text-stone-600">
+                            <thead class="text-xs text-teal-800 uppercase bg-teal-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">賣家名稱</th>
+                                    <th scope="col" class="px-6 py-3">產品重點</th>
+                                    <th scope="col" class="px-6 py-3">類型</th>
+                                    <th scope="col" class="px-6 py-3">推薦理由</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seller-table-body">
+                                <!-- JS will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: 進口實務指南 -->
+            <section id="import" class="content-section">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-2">進口實務指南：從淘寶到台灣的流程</h2>
+                    <p class="max-w-3xl mx-auto text-stone-600">
+                       將商品從淘寶運至台灣涉及到法規、物流與金流。本區塊將這些複雜的流程簡化為清晰的步驟與問答卡片。點擊卡片即可展開詳細說明，幫助您了解從初期朋友代購到未來規模化進口的注意事項。
+                    </p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-0 text-center mb-10">
+                    <div class="p-2">商品選擇</div>
+                    <div class="text-teal-500 text-2xl font-mono">→</div>
+                    <div class="p-2">商品檢驗查詢</div>
+                     <div class="text-teal-500 text-2xl font-mono">→</div>
+                    <div class="p-2">物流與金流</div>
+                     <div class="text-teal-500 text-2xl font-mono">→</div>
+                    <div class="p-2">報關與關稅</div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="qa-card bg-white rounded-lg shadow-md cursor-pointer border-t-4 border-teal-500">
+                        <div class="p-5 flex justify-between items-center">
+                            <h4 class="font-bold text-lg">a. 進口關稅與報關流程？</h4>
+                            <span class="text-2xl text-teal-600 transform transition-transform duration-300">＋</span>
+                        </div>
+                        <div class="qa-card-answer px-5 pb-5 text-stone-600 text-sm">
+                            <p><strong>初期少量（朋友代購）：</strong>通常屬於自用行李範圍，價值在台幣2萬元以下免關稅，無需正式報關。這是測試市場最簡單的方式。</p>
+                            <p class="mt-2"><strong>未來商業進口：</strong>需透過報關行正式報關。寵物輔具（非醫療器材）稅則號列可能歸在其他紡織製品或塑膠製品等，關稅稅率約在6%-12%不等，另需加5%營業稅。需準備商業發票、裝箱單等文件。</p>
+                        </div>
+                    </div>
+                    <div class="qa-card bg-white rounded-lg shadow-md cursor-pointer border-t-4 border-teal-500">
+                        <div class="p-5 flex justify-between items-center">
+                            <h4 class="font-bold text-lg">b. 是否需要商品檢驗(BSMI)？</h4>
+                            <span class="text-2xl text-teal-600 transform transition-transform duration-300">＋</span>
+                        </div>
+                        <div class="qa-card-answer px-5 pb-5 text-stone-600 text-sm">
+                            <p><strong>一般輔具：</strong>絕大多數寵物輔助帶、護具、衣物等，若<span class="font-bold">不含電子零件</span>且<span class="font-bold">非屬醫療器材</span>，通常<span class="font-bold text-teal-700">不需要</span>BSMI應施檢驗。這是您應選擇低風險產品的另一個重要原因。</p>
+                            <p class="mt-2"><strong>注意：</strong>若產品宣稱有「醫療效果」（如矯正、治療），或帶有電熱、按摩等功能，則可能落入醫療器材或應施檢驗電器的範疇，流程將極為複雜，初期應完全避免。</p>
+                        </div>
+                    </div>
+                    <div class="qa-card bg-white rounded-lg shadow-md cursor-pointer border-t-4 border-teal-500">
+                        <div class="p-5 flex justify-between items-center">
+                            <h4 class="font-bold text-lg">c. 可行的物流與金流方式？</h4>
+                            <span class="text-2xl text-teal-600 transform transition-transform duration-300">＋</span>
+                        </div>
+                        <div class="qa-card-answer px-5 pb-5 text-stone-600 text-sm">
+                            <p><strong>金流：</strong>可使用台灣的信用卡在淘寶付款（會有些許手續費），或透過代付服務、支付寶儲值等方式。</p>
+                            <p class="mt-2"><strong>物流（商業）：</strong>可使用淘寶官方的集運服務，將多個賣家的貨物集中後一次寄到台灣，或尋找私人集運商。私人集運商通常在處理特殊貨物上更有彈性，可多方比價。</p>
+                             <p class="mt-2"><strong>初期策略：</strong>利用朋友帶回的方式，完美解決初期的金流與物流問題，成本最低。</p>
+                        </div>
+                    </div>
+                    <div class="qa-card bg-white rounded-lg shadow-md cursor-pointer border-t-4 border-teal-500">
+                        <div class="p-5 flex justify-between items-center">
+                            <h4 class="font-bold text-lg">初期創業的風險提示</h4>
+                             <span class="text-2xl text-teal-600 transform transition-transform duration-300">＋</span>
+                        </div>
+                        <div class="qa-card-answer px-5 pb-5 text-stone-600 text-sm">
+                            <p><strong>智財權：</strong>避免進口仿冒知名品牌（如Ruffwear）的商品，可能觸法。</p>
+                             <p class="mt-2"><strong>產品責任：</strong>確保產品材質安全無毒，結構堅固。若因產品瑕疵導致寵物受傷，可能會有消費糾紛。</p>
+                             <p class="mt-2"><strong>行銷宣傳：</strong>切勿宣稱產品有任何「療效」，以免違反藥事法或獸醫師法相關規定。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    const targetId = link.getAttribute('data-target');
+                    sections.forEach(section => {
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                        }
+                    });
+                    window.scrollTo(0, 0);
+                });
+            });
+
+            const hotItemsData = {
+                labels: ['輔助帶/提帶', '寵物輪椅', '護具(護膝/護肘)', '防舔咬頭套/恢復衣', '其他'],
+                datasets: [{
+                    label: '熱銷品項佔比',
+                    data: [45, 15, 20, 15, 5],
+                    backgroundColor: [
+                        '#14b8a6', // teal-500
+                        '#f97316', // orange-500
+                        '#3b82f6', // blue-500
+                        '#8b5cf6', // violet-500
+                        '#a3a3a3'  // neutral-400
+                    ],
+                    hoverOffset: 4
+                }]
+            };
+
+            const hotItemsChartCtx = document.getElementById('hotItemsChart').getContext('2d');
+            new Chart(hotItemsChartCtx, {
+                type: 'doughnut',
+                data: hotItemsData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const nicheButtons = document.querySelectorAll('.tab-button');
+            const nicheContent = document.getElementById('niche-content');
+            const nicheData = {
+                corgi: {
+                    title: '🐶 柯基市場機會點',
+                    painPoints: ['通用輔助帶長度不符，容易卡住後腿', '脊椎壓力大，需要良好腹部支撐', '腿短，提帶高度需要特別設計'],
+                    opportunities: ['進口柯基專用全身輔助帶', '主打「龍骨保護」的腹部支撐帶', '開發可調節長度的提帶']
+                },
+                cat: {
+                    title: '🐱 貓市場機會點 (藍海)',
+                    painPoints: ['犬用設計過於笨重、束縛感強', '貓咪天性敏感，對材質要求極高', '市面上幾乎沒有貓專用術後/癱瘓輔具'],
+                    opportunities: ['引進超輕量、柔軟的胸背式輔助衣', '強調「無異物感」的透氣網眼材質產品', '開發專為貓設計的簡易提臀帶或擔架']
+                }
+            };
+
+            nicheButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    nicheButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const niche = button.dataset.niche;
+                    const data = nicheData[niche];
+                    nicheContent.innerHTML = `
+                        <h4 class="font-bold text-lg mb-3 text-center">${data.title}</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-rose-50 p-3 rounded">
+                                <h5 class="font-semibold text-rose-700 mb-2">主要痛點：</h5>
+                                <ul class="list-disc list-inside text-sm space-y-1">${data.painPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+                            </div>
+                            <div class="bg-teal-50 p-3 rounded">
+                                <h5 class="font-semibold text-teal-700 mb-2">產品機會：</h5>
+                                <ul class="list-disc list-inside text-sm space-y-1">${data.opportunities.map(o => `<li>${o}</li>`).join('')}</ul>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            if (nicheButtons.length > 0) {
+                nicheButtons[0].click();
+            }
+
+            const sellersData = [
+                { name: 'LIFITI/徠菲緹', focus: '前後腿輔助帶、助行衣', type: '專家', reason: '專注康復領域，設計感強，產品專業度高。' },
+                { name: 'petsserect/寵物祕境', focus: '護膝/護肘、關節固定帶', type: '專家', reason: '專精關節保護，產品功能性強，可切入恢復市場。' },
+                { name: '固德/goodpet', focus: '簡易提臀帶、後腿輔助帶', type: '專家', reason: '產品務實，設計簡潔，適合做為入門測試市場的產品。' },
+                { name: 'hipidog/嬉皮狗', focus: '基礎輔助帶、護腿套', type: '品牌', reason: '大品牌，銷量與評價有支撐，品質穩定，不易出錯。' },
+                { name: 'DogLemi/多格米', focus: '設計感助行帶、安全帶', type: '品牌', reason: '注重人因工學與設計，可定位在中端市場。' },
+                { name: 'corgi life/柯基佳品', focus: '柯基專用全身輔助帶', type: '利基', reason: '完美命中利基犬種，直接解決尺寸痛點，市場區隔明顯。' },
+                { name: 'Touchdog/它它', focus: '高品質胸背帶、柔軟牽繩', type: '利基', reason: '產品材質優良舒適，其胸背帶有潛力開發貓用市場。' },
+                { name: '寵譽/chongyu', focus: '價格實惠的後腿提帶', type: '實用', reason: '高性價比，銷量大，能以低成本滿足市場基本需求。' },
+                { name: 'Kimpets/金寵', focus: '各式寵物護膝/護肘', type: '實用', reason: '護具品項選擇多樣，可快速建立產品線廣度。' },
+                { name: 'YEE 品牌旗艦店', focus: '綜合寵物用品', type: '品牌', reason: '穩定的大品牌，可作為品質與價格的交叉比較基準。' },
+            ];
+
+            const sellerTableBody = document.getElementById('seller-table-body');
+            const sellerFilterBtns = document.querySelectorAll('.seller-filter-btn');
+
+            function renderSellers(filter) {
+                sellerTableBody.innerHTML = '';
+                const filteredData = (filter === 'all') ? sellersData : sellersData.filter(seller => seller.type === filter);
+                
+                filteredData.forEach(seller => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-stone-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-stone-900 whitespace-nowrap">${seller.name}</td>
+                        <td class="px-6 py-4">${seller.focus}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${seller.type === '專家' ? 'bg-sky-100 text-sky-800' : seller.type === '品牌' ? 'bg-amber-100 text-amber-800' : seller.type === '利基' ? 'bg-violet-100 text-violet-800' : 'bg-lime-100 text-lime-800'}">${seller.type}</span></td>
+                        <td class="px-6 py-4">${seller.reason}</td>
+                    `;
+                    sellerTableBody.appendChild(row);
+                });
+            }
+
+            sellerFilterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sellerFilterBtns.forEach(b => b.classList.replace('bg-teal-500','bg-gray-200'), b.classList.replace('text-white','text-gray-700'));
+                    btn.classList.replace('bg-gray-200','bg-teal-500');
+                    btn.classList.replace('text-gray-700','text-white');
+                    renderSellers(btn.dataset.filter);
+                });
+            });
+            renderSellers('all');
+
+
+            const qaCards = document.querySelectorAll('.qa-card');
+            qaCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('open');
+                    const icon = card.querySelector('span');
+                    icon.textContent = card.classList.contains('open') ? '－' : '＋';
+                    icon.classList.toggle('rotate-90');
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
